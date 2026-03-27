@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Holiday / Shutdown Eligibility Simulator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; }
+
+  header {
+    background: #1a3c5e;
+    color: white;
+    padding: 18px 30px;
+  }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header p { font-size: 12px; opacity: 0.7; margin-top: 3px; }
+
+  .priority-badge {
+    display: inline-block;
+    background: #f0a500;
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px 30px; max-width: 1200px; margin: auto; }
+
+  .card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .card h2 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e8edf2;
+    color: #1a3c5e;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #888;
+    margin: 14px 0 6px;
+  }
+
+  label { font-size: 12px; color: #555; display: block; margin-bottom: 4px; }
+
+  input[type=text], select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #dce1e7;
+    border-radius: 5px;
+    font-size: 13px;
+    margin-bottom: 10px;
+    transition: border 0.2s;
+  }
+  input[type=text]:focus, select:focus { outline: none; border-color: #1a3c5e; }
+
+  .hint { font-size: 11px; color: #aaa; margin-top: -7px; margin-bottom: 10px; }
+
+  .radio-group { display: flex; gap: 12px; margin-bottom: 10px; }
+  .radio-group label {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 13px; color: #333; margin: 0; cursor: pointer;
+  }
+
+  .toggle-box {
+    border: 1px solid #dce1e7;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: #fafbfc;
+  }
+  .toggle-box.active { border-color: #1a3c5e; background: #f0f5ff; }
+
+  .toggle-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .toggle-header span { font-size: 13px; font-weight: 600; }
+
+  .badge-inc { background: #d4edda; color: #155724; font-size: 11px; padding: 1px 7px; border-radius: 10px; }
+  .badge-exc { background: #f8d7da; color: #721c24; font-size: 11px; padding: 1px 7px; border-radius: 10px; }
+
+  .btn-run {
+    width: 100%;
+    padding: 11px;
+    background: #1a3c5e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background 0.2s;
+  }
+  .btn-run:hover { background: #254f7a; }
+
+  /* Trace Panel */
+  .trace-container { grid-column: 1 / -1; }
+
+  .trace-steps { margin-top: 10px; }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    border-left: 4px solid transparent;
+    font-size: 13px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .step.init    { background: #e8f0fe; border-color: #4a90d9; }
+  .step.section { background: #f5f0ff; border-color: #7c5cbf; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .step.decision { background: #fff8e1; border-color: #f0a500; }
+  .step.pass   { background: #e6f4ea; border-color: #2e7d32; }
+  .step.fail   { background: #fde8e8; border-color: #c62828; }
+  .step.neutral { background: #f5f5f5; border-color: #999; }
+
+  .step-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .step-body { flex: 1; }
+  .step-label { font-weight: 600; }
+  .step-detail { font-size: 12px; color: #666; margin-top: 2px; }
+
+  /* Result Banner */
+  .result-banner {
+    grid-column: 1 / -1;
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: none;
+    animation: fadeIn 0.4s ease;
+    text-align: center;
+  }
+  .result-banner.yes { background: #2e7d32; color: white; }
+  .result-banner.no  { background: #c62828; color: white; }
+  .result-banner h2  { font-size: 22px; margin-bottom: 4px; }
+  .result-banner p   { font-size: 13px; opacity: 0.85; }
+
+  /* Priority note */
+  .priority-note {
+    grid-column: 1 / -1;
+    background: #fff8e1;
+    border: 1px solid #f0a500;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #7a5900;
+  }
+  .priority-note strong { color: #5a4000; }
+
+  .empty-state { color: #aaa; font-size: 13px; text-align: center; padding: 20px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Holiday / Shutdown Eligibility Simulator <span class="priority-badge">Priority: Employee → Shift Group | Inclusion → Exclusion</span></h1>
+  <p>Simulates the eligibility determination logic based on inclusion/exclusion configuration</p>
+</header>
+
+<div class="container">
+
+  <!-- Priority Note -->
+  <div class="priority-note">
+    <strong>Logic rules:</strong>
+    Employee check runs first — if employee is found in list (include or exclude), Shift Group is <strong>skipped</strong> &nbsp;|&nbsp;
+    If employee NOT in list → fall through to Shift Group &nbsp;|&nbsp;
+    Inclusion + empty list = <strong>include all</strong> &nbsp;|&nbsp;
+    Exclusion + empty list = <strong>exclude nobody</strong>
+  </div>
+
+  <!-- Holiday Config -->
+  <div class="card">
+    <h2>Holiday Configuration</h2>
+
+    <div class="section-label">Employee Level</div>
+    <div class="toggle-box" id="empBox">
+      <div class="toggle-header">
+        <span>IsIncludeByEmployee</span>
+        <span id="empBadge" class="badge-inc">Inclusion</span>
+      </div>
+      <div class="radio-group">
+        <label><input type="radio" name="isIncEmp" value="1" checked onchange="updateBadge('emp')"> 1 = Inclusion</label>
+        <label><input type="radio" name="isIncEmp" value="0" onchange="updateBadge('emp')"> 0 = Exclusion</label>
+      </div>
+      <label>Employee List <span style="color:#aaa">(comma separated, leave empty to test empty list)</span></label>
+      <input type="text" id="empList" placeholder="e.g. EMP001, EMP002, EMP003">
+    </div>
+
+    <div class="section-label">Shift Group Level</div>
+    <div class="toggle-box" id="grpBox">
+      <div class="toggle-header">
+        <span>IsIncludeByGroup</span>
+        <span id="grpBadge" class="badge-inc">Inclusion</span>
+      </div>
+      <div class="radio-group">
+        <label><input type="radio" name="isIncGrp" value="1" checked onchange="updateBadge('grp')"> 1 = Inclusion</label>
+        <label><input type="radio" name="isIncGrp" value="0" onchange="updateBadge('grp')"> 0 = Exclusion</label>
+      </div>
+      <label>Shift Group List <span style="color:#aaa">(comma separated, leave empty to test empty list)</span></label>
+      <input type="text" id="grpList" placeholder="e.g. PD, HR, IT">
+    </div>
+  </div>
+
+  <!-- Employee Input -->
+  <div class="card">
+    <h2>Employee to Check</h2>
+
+    <div class="section-label">Employee Details</div>
+    <label>Employee No</label>
+    <input type="text" id="empNo" placeholder="e.g. EMP001">
+
+    <label>Shift Group</label>
+    <input type="text" id="empShiftGrp" placeholder="e.g. PD">
+
+    <button class="btn-run" onclick="runSimulation()">▶ Run Eligibility Check</button>
+
+    <div style="margin-top:14px;">
+      <div class="section-label">Quick Test Scenarios</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+        <button onclick="loadScenario('a2')" style="font-size:11px;padding:4px 10px;border:1px solid #dce1e7;border-radius:4px;cursor:pointer;background:#fff;">A2: Include Empty List</button>
+        <button onclick="loadScenario('a3')" style="font-size:11px;padding:4px 10px;border:1px solid #dce1e7;border-radius:4px;cursor:pointer;background:#fff;">A3: Include with List</button>
+        <button onclick="loadScenario('a4')" style="font-size:11px;padding:4px 10px;border:1px solid #dce1e7;border-radius:4px;cursor:pointer;background:#fff;">A4: Exclude with List</button>
+        <button onclick="loadScenario('b2')" style="font-size:11px;padding:4px 10px;border:1px solid #dce1e7;border-radius:4px;cursor:pointer;background:#fff;">B2: Group Include PD</button>
+        <button onclick="loadScenario('c1')" style="font-size:11px;padding:4px 10px;border:1px solid #dce1e7;border-radius:4px;cursor:pointer;background:#fff;">C1: Emp Empty + Group PD</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result Banner -->
+  <div class="result-banner" id="resultBanner">
+    <h2 id="resultTitle"></h2>
+    <p id="resultDesc"></p>
+  </div>
+
+  <!-- Trace -->
+  <div class="card trace-container">
+    <h2>Decision Trace</h2>
+    <div class="trace-steps" id="traceSteps">
+      <div class="empty-state">Configure settings above and click Run to see the step-by-step decision trace.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function updateBadge(type) {
+    const val = document.querySelector(`input[name="isInc${type === 'emp' ? 'Emp' : 'Grp'}']:checked`).value;
+    const badge = document.getElementById(type === 'emp' ? 'empBadge' : 'grpBadge');
+    const box   = document.getElementById(type === 'emp' ? 'empBox'   : 'grpBox');
+    if (val === '1') {
+      badge.textContent = 'Inclusion'; badge.className = 'badge-inc';
+      box.classList.add('active');
+    } else {
+      badge.textContent = 'Exclusion'; badge.className = 'badge-exc';
+      box.classList.remove('active');
+    }
+  }
+
+  function parseList(str) {
+    if (!str.trim()) return [];
+    return str.split(',').map(s => s.trim().toUpperCase()).filter(s => s);
+  }
+
+  function loadScenario(id) {
+    const s = {
+      a2: { isIncEmp: '1', empList: '',           isIncGrp: '0', grpList: '',     empNo: 'EMP001', shiftGrp: 'PD'  },
+      a3: { isIncEmp: '1', empList: 'EMP001,EMP002', isIncGrp: '0', grpList: '', empNo: 'EMP001', shiftGrp: 'PD'  },
+      a4: { isIncEmp: '0', empList: 'EMP001',      isIncGrp: '0', grpList: '',   empNo: 'EMP001', shiftGrp: 'PD'  },
+      b2: { isIncEmp: '0', empList: '',            isIncGrp: '1', grpList: 'PD', empNo: 'EMP001', shiftGrp: 'PD'  },
+      c1: { isIncEmp: '1', empList: '',            isIncGrp: '1', grpList: 'PD', empNo: 'EMP001', shiftGrp: 'HR'  },
+    }[id];
+    if (!s) return;
+    document.querySelector(`input[name="isIncEmp"][value="${s.isIncEmp}"]`).checked = true;
+    document.querySelector(`input[name="isIncGrp"][value="${s.isIncGrp}"]`).checked = true;
+    document.getElementById('empList').value     = s.empList;
+    document.getElementById('grpList').value     = s.grpList;
+    document.getElementById('empNo').value       = s.empNo;
+    document.getElementById('empShiftGrp').value = s.shiftGrp;
+    updateBadge('emp'); updateBadge('grp');
+    runSimulation();
+  }
+
+  function runSimulation() {
+    const isIncEmp = parseInt(document.querySelector('input[name="isIncEmp"]:checked').value);
+    const isIncGrp = parseInt(document.querySelector('input[name="isIncGrp"]:checked').value);
+    const empList  = parseList(document.getElementById('empList').value);
+    const grpList  = parseList(document.getElementById('grpList').value);
+    const empNo    = document.getElementById('empNo').value.trim().toUpperCase();
+    const shiftGrp = document.getElementById('empShiftGrp').value.trim().toUpperCase();
+
+    if (!empNo || !shiftGrp) {
+      alert('Please fill in Employee No and Shift Group.');
+      return;
+    }
+
+    const steps = [];
+
+    // ── INIT ──
+    steps.push({ type: 'init', icon: '⚙️', label: 'Initialization', detail: 'HOLIDAY = NO | EMP_INC = NO | EMP_EXC = NO | HDS_ELIG = N' });
+
+    // ── EMPLOYEE VALIDATION ──
+    steps.push({ type: 'section', icon: '👤', label: 'Employee Validation' });
+
+    let empInc = false;  // EMP_INC = YES
+    let empExc = false;  // EMP_EXC = YES (excluded)
+    let empDecisionMade = false; // true = skip shift group
+
+    const foundInEmpList = empList.includes(empNo);
+
+    // Special case: IsIncludeByEmployee == 1 with empty list → include all (our fix)
+    if (isIncEmp === 1 && empList.length === 0) {
+      steps.push({ type: 'decision', icon: '❓', label: `Is "${empNo}" in the holiday employee list?`, detail: `List is empty — inclusion with empty list = include all (fixed behaviour)` });
+      steps.push({ type: 'pass',     icon: '✅', label: 'EMP_INC = YES', detail: 'Employee included (empty inclusion list = no restriction) → Shift Group check skipped' });
+      empInc = true;
+      empDecisionMade = true;
+
+    } else if (foundInEmpList) {
+      steps.push({ type: 'decision', icon: '❓', label: `Is "${empNo}" in the holiday employee list [${empList.join(', ')}]?`, detail: 'YES → check if inclusion or exclusion' });
+
+      if (isIncEmp === 1) {
+        steps.push({ type: 'decision', icon: '❓', label: 'IsIncludeByEmployee = 1 (Inclusion)?', detail: 'YES → employee is explicitly included' });
+        steps.push({ type: 'pass',     icon: '✅', label: 'EMP_INC = YES', detail: 'Employee is in the inclusion list → Shift Group check skipped' });
+        empInc = true;
+      } else {
+        steps.push({ type: 'decision', icon: '❓', label: 'IsIncludeByEmployee = 1 (Inclusion)?', detail: 'NO → this is an exclusion list → employee is excluded' });
+        steps.push({ type: 'fail',     icon: '❌', label: 'EMP_EXC = YES', detail: 'Employee is in the exclusion list → NOT eligible → Shift Group check skipped' });
+        empExc = true;
+      }
+      empDecisionMade = true;
+
+    } else {
+      // Employee not found in list → fall through to shift group
+      const reason = empList.length === 0
+        ? `List is empty (exclusion with empty list = exclude nobody)`
+        : `"${empNo}" not found in list [${empList.join(', ')}]`;
+      steps.push({ type: 'decision', icon: '❓', label: `Is "${empNo}" in the holiday employee list?`, detail: `NO — ${reason}` });
+      steps.push({ type: 'neutral',  icon: '➡️', label: 'No employee-level decision', detail: 'Employee not in any employee list → fall through to Shift Group check' });
+      empDecisionMade = false;
+    }
+
+    // ── SHIFT GROUP VALIDATION (only if no employee-level decision) ──
+    let hdsElig = false;
+
+    if (!empDecisionMade) {
+      steps.push({ type: 'section', icon: '🏢', label: 'Shift Group Validation' });
+
+      const foundInGrpList = grpList.includes(shiftGrp);
+
+      // Special case: IsIncludeByGroup == 1 with empty list → include all (our fix)
+      if (isIncGrp === 1 && grpList.length === 0) {
+        steps.push({ type: 'decision', icon: '❓', label: `Is shift group "${shiftGrp}" in the holiday shift group list?`, detail: 'List is empty — inclusion with empty list = include all (fixed behaviour)' });
+        steps.push({ type: 'pass',     icon: '✅', label: 'HDS_ELIG = YES', detail: 'Shift group included (empty inclusion list = no restriction)' });
+        hdsElig = true;
+
+      } else if (foundInGrpList) {
+        steps.push({ type: 'decision', icon: '❓', label: `Is shift group "${shiftGrp}" in the holiday shift group list [${grpList.join(', ')}]?`, detail: 'YES → check if inclusion or exclusion' });
+
+        if (isIncGrp === 1) {
+          steps.push({ type: 'decision', icon: '❓', label: 'IsIncludeByGroup = 1 (Inclusion)?', detail: 'YES → shift group is explicitly included' });
+          steps.push({ type: 'pass',     icon: '✅', label: 'HDS_ELIG = YES', detail: 'Shift group found in inclusion list → eligible' });
+          hdsElig = true;
+        } else {
+          steps.push({ type: 'decision', icon: '❓', label: 'IsIncludeByGroup = 1 (Inclusion)?', detail: 'NO → this is an exclusion list → shift group is excluded' });
+          steps.push({ type: 'fail',     icon: '❌', label: 'HDS_ELIG = NO', detail: 'Shift group found in exclusion list → NOT eligible' });
+          hdsElig = false;
+        }
+
+      } else {
+        // Shift group not in list
+        const reason = grpList.length === 0
+          ? 'List is empty (exclusion with empty list = exclude nobody)'
+          : `"${shiftGrp}" not found in list [${grpList.join(', ')}]`;
+        steps.push({ type: 'decision', icon: '❓', label: `Is shift group "${shiftGrp}" in the holiday shift group list?`, detail: `NO — ${reason}` });
+
+        if (isIncGrp === 0) {
+          // Exclusion, not in list = not excluded = eligible
+          steps.push({ type: 'pass', icon: '✅', label: 'HDS_ELIG = YES', detail: 'Shift group not in exclusion list → not excluded → eligible' });
+          hdsElig = true;
+        } else {
+          // Inclusion, not in list = not included = not eligible
+          steps.push({ type: 'fail', icon: '❌', label: 'HDS_ELIG = NO', detail: 'Shift group not in inclusion list → not included → NOT eligible' });
+          hdsElig = false;
+        }
+      }
+    }
+
+    // ── FINAL DECISION ──
+    steps.push({ type: 'section', icon: '🏁', label: 'Final Eligibility Decision' });
+
+    let holiday = false;
+    let reason  = '';
+
+    if (empExc) {
+      holiday = false;
+      reason  = 'Employee explicitly excluded (EMP_EXC = YES)';
+    } else if (empInc) {
+      holiday = true;
+      reason  = 'Employee explicitly included (EMP_INC = YES)';
+    } else if (hdsElig) {
+      holiday = true;
+      reason  = 'Eligible via Shift Group (HDS_ELIG = YES)';
+    } else {
+      holiday = false;
+      reason  = 'No inclusion condition met (HDS_ELIG = NO)';
+    }
+
+    steps.push({
+      type:   holiday ? 'pass' : 'fail',
+      icon:   holiday ? '🎉' : '🚫',
+      label:  `HOLIDAY = ${holiday ? 'YES' : 'NO'}`,
+      detail: reason
+    });
+
+    // ── RENDER ──
+    const container = document.getElementById('traceSteps');
+    container.innerHTML = steps.map(s => `
+      <div class="step ${s.type}">
+        <span class="step-icon">${s.icon}</span>
+        <div class="step-body">
+          <div class="step-label">${s.label}</div>
+          ${s.detail ? `<div class="step-detail">${s.detail}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    const banner = document.getElementById('resultBanner');
+    banner.className = `result-banner ${holiday ? 'yes' : 'no'}`;
+    banner.style.display = 'block';
+    document.getElementById('resultTitle').textContent = `HOLIDAY = ${holiday ? 'YES' : 'NO'}`;
+    document.getElementById('resultDesc').textContent  = holiday
+      ? `${empNo} is ELIGIBLE for this holiday.`
+      : `${empNo} is NOT eligible for this holiday.`;
+  }
+
+  // Init badges
+  updateBadge('emp');
+  updateBadge('grp');
+</script>
+</body>
+</html>
