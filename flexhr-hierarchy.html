@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlexHR System Dependency & Compatibility</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1117;--surface:#1a1d27;--surfaceHover:#222633;--border:#2a2e3d;
+  --accent:#4f8ff7;--accentSoft:rgba(79,143,247,0.12);
+  --green:#34d399;--greenSoft:rgba(52,211,153,0.12);
+  --amber:#fbbf24;--amberSoft:rgba(251,191,36,0.12);
+  --purple:#a78bfa;--purpleSoft:rgba(167,139,250,0.12);
+  --rose:#fb7185;--roseSoft:rgba(251,113,133,0.12);
+  --cyan:#22d3ee;--cyanSoft:rgba(34,211,238,0.12);
+  --text:#e2e8f0;--textMuted:#94a3b8;--textDim:#64748b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;padding:40px 20px;min-height:100vh}
+.container{max-width:740px;margin:0 auto}
+.mono{font-family:'IBM Plex Mono',monospace}
+.label{font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent)}
+.section-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--textDim);margin-bottom:12px}
+code{background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:3px;font-size:12px;font-family:'IBM Plex Mono',monospace}
+
+/* Header */
+.header{margin-bottom:32px;text-align:center}
+.header h1{font-size:26px;font-weight:700;margin:0 0 10px;letter-spacing:-0.02em}
+.header p{font-size:13px;color:var(--textMuted);max-width:520px;margin:0 auto;line-height:1.6}
+
+/* Rules */
+.rules-title{font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--amber);margin-bottom:14px;text-align:center}
+.rule-card{background:var(--surface);border-radius:10px;padding:16px 20px;display:flex;gap:16px;align-items:flex-start;margin-bottom:10px}
+.rule-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;flex-shrink:0}
+.rule-title{font-size:15px;font-weight:700;color:var(--text)}
+.rule-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+.rule-desc{font-size:12px;color:var(--textMuted);line-height:1.6;margin:4px 0 8px}
+.rule-example{font-size:12px;background:rgba(255,255,255,0.03);border-radius:6px;padding:8px 12px}
+.rule-example-label{color:var(--textDim);font-size:10px;margin-right:6px}
+.tldr{margin-top:14px;background:linear-gradient(135deg,var(--amberSoft),transparent);border:1px solid rgba(251,191,36,0.25);border-radius:10px;padding:14px 18px;text-align:center;font-size:13px;line-height:1.7}
+
+/* Diagram */
+.diagram-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 10px 10px;margin-bottom:28px}
+.diagram-hint{text-align:center;padding:6px 0 2px;font-size:10px;color:var(--textDim)}
+svg text{pointer-events:none}
+
+/* Accordion */
+.accordion{cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;transition:border-color 0.2s}
+.accordion.open{border-color:rgba(255,255,255,0.1)}
+.accordion-header{padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+.accordion-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.accordion-title{font-size:14px;font-weight:600}
+.accordion-desc{font-size:12px;color:var(--textMuted);margin-top:2px}
+.accordion-toggle{color:var(--textDim);font-size:20px;flex-shrink:0;transition:transform 0.2s}
+.accordion-body{padding:0 18px 18px;border-top:1px solid var(--border);display:none}
+.accordion.open .accordion-body{display:block}
+.accordion.open .accordion-toggle{transform:rotate(45deg)}
+
+/* Version badge */
+.ver-row{display:flex;align-items:center;gap:8px;padding:5px 0}
+.ver-label{font-size:11px;font-weight:600;width:90px}
+.ver-old{font-size:12px;color:var(--textDim);background:rgba(255,255,255,0.04);padding:2px 8px;border-radius:4px}
+.ver-old.changed{text-decoration:line-through}
+.ver-arrow{color:var(--textDim);font-size:12px}
+.ver-new{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px}
+
+/* Steps */
+.step{display:flex;gap:12px;margin-bottom:10px}
+.step-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;font-weight:500}
+.step-note{font-size:11px;color:var(--textMuted);margin-top:2px;line-height:1.5}
+
+.no-action{background:rgba(255,255,255,0.02);border-radius:8px;padding:10px 14px;margin-top:14px}
+.no-action-item{font-size:12px;color:var(--textMuted);line-height:1.6;padding-left:4px}
+
+/* Table */
+.ref-table{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:28px}
+.ref-table-title{padding:14px 18px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:500px}
+th{padding:10px 14px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--textMuted);border-bottom:1px solid var(--border)}
+td{padding:10px 14px;color:var(--textMuted);border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+td:first-child{font-weight:600}
+.footer{text-align:center;font-size:10px;color:var(--textDim);padding-bottom:20px}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="label mono" style="margin-bottom:8px">Product Architecture</div>
+    <h1>FlexHR System Dependency & Compatibility</h1>
+    <p>Dependencies flow <strong style="color:var(--text)">downward</strong>. Children depend on parents — never the reverse. Bases are <strong style="color:var(--text)">backward compatible</strong>.</p>
+  </div>
+
+  <!-- 3 Rules -->
+  <div style="margin-bottom:32px">
+    <div class="rules-title mono">⚡ 3 Compatibility Rules — Memorize These</div>
+
+    <div class="rule-card" style="border:1px solid rgba(52,211,153,0.2)">
+      <div class="rule-num" style="background:rgba(52,211,153,0.1);border:2px solid rgba(52,211,153,0.35);color:var(--green)">1</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span class="rule-title">Upgrading Base never breaks plugins</span>
+          <span class="rule-badge mono" style="background:rgba(52,211,153,0.13);color:var(--green)">SAFE</span>
+        </div>
+        <div class="rule-desc">If a plugin is compatible with Base 8.6.2, it is <strong style="color:var(--text)">guaranteed</strong> compatible with 8.6.3, 8.6.4, and so on. We maintain backward compatibility in every base release.</div>
+        <div class="rule-example" style="border-left:3px solid rgba(52,211,153,0.3)">
+          <span class="rule-example-label mono">EXAMPLE:</span>
+          <span style="color:var(--text)">eClaim 8.6.1 works on Base 8.6.2 → it will also work on Base 8.6.3</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rule-card" style="border:1px solid rgba(52,211,153,0.2)">
+      <div class="rule-num" style="background:rgba(52,211,153,0.1);border:2px solid rgba(52,211,153,0.35);color:var(--green)">2</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span class="rule-title">Base release never forces a plugin upgrade</span>
+          <span class="rule-badge mono" style="background:rgba(52,211,153,0.13);color:var(--green)">NO FORCE ↓</span>
+        </div>
+        <div class="rule-desc">When we release a new base version, <strong style="color:var(--text)">nobody is required to upgrade their plugins</strong>. Plugins continue to work as-is. We do not force plugin upgrades alongside base releases (unless something truly exceptional happens).</div>
+        <div class="rule-example" style="border-left:3px solid rgba(52,211,153,0.3)">
+          <span class="rule-example-label mono">EXAMPLE:</span>
+          <span style="color:var(--text)">We release Base 8.6.3 → all existing plugins stay on their current version. No action needed.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rule-card" style="border:1px solid rgba(251,191,36,0.2)">
+      <div class="rule-num" style="background:rgba(251,191,36,0.1);border:2px solid rgba(251,191,36,0.35);color:var(--amber)">3</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span class="rule-title">Plugin upgrade can force a base upgrade</span>
+          <span class="rule-badge mono" style="background:rgba(251,191,36,0.13);color:var(--amber)">MAY FORCE ↑</span>
+        </div>
+        <div class="rule-desc">When upgrading to a newer plugin version, that plugin <strong style="color:var(--text)">may require a minimum base version</strong>. This is the only direction where an upgrade can force another upgrade — child pulls parent up, never the reverse.</div>
+        <div class="rule-example" style="border-left:3px solid rgba(251,191,36,0.3)">
+          <span class="rule-example-label mono">EXAMPLE:</span>
+          <span style="color:var(--text)">eClaim 8.6.2 requires minimum Base 8.6.3 → must upgrade base first before upgrading plugin</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tldr">
+      <strong style="color:var(--amber)">TL;DR:</strong> We can push base upgrades anytime — plugins won't break.
+      We <strong>never</strong> force plugin upgrades when releasing a base.
+      But when <em>you</em> choose to upgrade a plugin, <strong>you</strong> may need to upgrade the base first.
+    </div>
+  </div>
+
+  <!-- Diagram -->
+  <div class="diagram-wrap">
+    <svg id="diagram" viewBox="0 0 680 290" style="width:100%;height:auto">
+      <!-- Tier backgrounds -->
+      <rect x="2" y="4" width="676" height="52" rx="5" fill="var(--accentSoft)" opacity="0.25"/>
+      <rect x="2" y="60" width="676" height="58" rx="5" fill="rgba(255,255,255,0.015)"/>
+      <rect x="2" y="122" width="676" height="58" rx="5" fill="rgba(255,255,255,0.015)"/>
+      <rect x="2" y="184" width="676" height="52" rx="5" fill="var(--cyanSoft)" opacity="0.15"/>
+      <text x="12" y="18" fill="var(--textDim)" font-size="8" font-family="'IBM Plex Mono',monospace" opacity="0.6">CORE</text>
+      <text x="12" y="74" fill="var(--textDim)" font-size="8" font-family="'IBM Plex Mono',monospace" opacity="0.6">SYSTEMS</text>
+      <text x="12" y="136" fill="var(--textDim)" font-size="8" font-family="'IBM Plex Mono',monospace" opacity="0.6">PLUGINS / X BASE</text>
+      <text x="12" y="198" fill="var(--textDim)" font-size="8" font-family="'IBM Plex Mono',monospace" opacity="0.6">X MODULES</text>
+
+      <!-- Edges (dependency arrows) -->
+      <g id="edges"></g>
+      <!-- Nodes -->
+      <g id="nodes"></g>
+
+      <!-- Legend -->
+      <line x1="500" y1="276" x2="525" y2="276" stroke="var(--textMuted)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.5"/>
+      <polygon points="528,276 520,272 520,280" fill="var(--textMuted)" opacity="0.5"/>
+      <text x="534" y="280" fill="var(--textDim)" font-size="9" font-family="'IBM Plex Mono',monospace">= "depends on"</text>
+      <rect x="610" y="269" width="16" height="14" rx="3" fill="none" stroke="var(--textDim)" stroke-dasharray="4 2" stroke-width="1"/>
+      <text x="630" y="280" fill="var(--textDim)" font-size="9" font-family="'IBM Plex Mono',monospace">= plugin</text>
+    </svg>
+    <div class="diagram-hint">Hover any node to highlight its connections</div>
+  </div>
+
+  <!-- Scenarios -->
+  <div style="margin-bottom:28px">
+    <div class="label mono" style="margin-bottom:6px">Real-World Example</div>
+    <p style="font-size:13px;color:var(--textMuted);margin-bottom:14px;line-height:1.6">
+      Both customers start on <code>v7-7.3.0.9 / v6-6.5.1SP1 / v8-8.6.2 / eClaim-8.6.1</code>. New eClaim 8.6.2 ships with a <strong style="color:var(--text)">bugfix</strong> + <strong style="color:var(--text)">flexiben enhancement</strong>.
+    </p>
+
+    <!-- Scenario A -->
+    <div class="accordion" id="scenarioA">
+      <div class="accordion-header" onclick="toggleAccordion('scenarioA')">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div class="accordion-dot" style="background:var(--green)"></div>
+          <div>
+            <div class="accordion-title">Customer A — Bugfix Only</div>
+            <div class="accordion-desc">Needs the bugfix in eClaim 8.6.2. Flexiben feature is irrelevant.</div>
+          </div>
+        </div>
+        <span class="accordion-toggle">+</span>
+      </div>
+      <div class="accordion-body">
+        <div style="margin-top:14px">
+          <div class="section-label mono">Version Changes</div>
+          <div class="ver-row"><span class="ver-label" style="color:var(--accent)">HRMSv7</span><span class="ver-old">7.3.0.9</span></div>
+          <div class="ver-row"><span class="ver-label" style="color:var(--green)">ESSv6</span><span class="ver-old">6.5.1 SP1</span></div>
+          <div class="ver-row"><span class="ver-label" style="color:var(--amber)">ESSv8 Base</span><span class="ver-old changed">8.6.2</span><span class="ver-arrow">→</span><span class="ver-new" style="color:var(--text);background:rgba(251,191,36,0.13);border:1px solid rgba(251,191,36,0.3)">8.6.3</span></div>
+          <div class="ver-row"><span class="ver-label" style="color:var(--rose)">eClaim</span><span class="ver-old changed">8.6.1</span><span class="ver-arrow">→</span><span class="ver-new" style="color:var(--text);background:rgba(251,113,133,0.13);border:1px solid rgba(251,113,133,0.3)">8.6.2</span></div>
+        </div>
+        <div style="margin:14px 0">
+          <div class="section-label mono">Upgrade Steps (in order)</div>
+          <div class="step">
+            <div class="step-num" style="background:rgba(52,211,153,0.13);border:1px solid rgba(52,211,153,0.3);color:var(--green)">1</div>
+            <div><div class="step-text">Upgrade ESSv8 Base 8.6.2 → 8.6.3</div><div class="step-note">eClaim 8.6.2 requires minimum base 8.6.3 (Rule 3)</div></div>
+          </div>
+          <div class="step">
+            <div class="step-num" style="background:rgba(52,211,153,0.13);border:1px solid rgba(52,211,153,0.3);color:var(--green)">2</div>
+            <div><div class="step-text">Upgrade eClaim plugin 8.6.1 → 8.6.2</div><div class="step-note">Gets the bugfix. Flexiben exists in code but not activated.</div></div>
+          </div>
+        </div>
+        <div class="no-action">
+          <div class="section-label mono">No Action Needed</div>
+          <div class="no-action-item"><span style="color:var(--green);margin-right:6px">—</span>HRMSv7 stays at 7.3.0.9 — not affected</div>
+          <div class="no-action-item"><span style="color:var(--green);margin-right:6px">—</span>ESSv6 stays at 6.5.1 SP1 — not affected</div>
+          <div class="no-action-item"><span style="color:var(--green);margin-right:6px">—</span>Other plugins — untouched, still compatible with new base (Rule 1)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scenario B -->
+    <div class="accordion" id="scenarioB">
+      <div class="accordion-header" onclick="toggleAccordion('scenarioB')">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div class="accordion-dot" style="background:var(--amber)"></div>
+          <div>
+            <div class="accordion-title">Customer B — Flexiben Enhancement</div>
+            <div class="accordion-desc">Needs full flexiben feature spanning HRMSv7 + ESSv8 Base + eClaim.</div>
+          </div>
+        </div>
+        <span class="accordion-toggle">+</span>
+      </div>
+      <div class="accordion-body">
+        <div style="margin-top:14px">
+          <div class="section-label mono">Version Changes</div>
+          <div class="ver-row"><span class="ver-label" style="color:var(--accent)">HRMSv7</span><span class="ver-old changed">7.3.0.9</span><span class="ver-arrow">→</span><span class="ver-new" style="color:var(--text);background:rgba(79,143,247,0.13);border:1px solid rgba(79,143,247,0.3)">7.3.1.0</span></div>
+          <div class="ver-row"><span class="ver-label" style="color:var(--green)">ESSv6</span><span class="ver-old">6.5.1 SP1</span></div>
+          <div class="ver-row"><span class="ver-label" style="color:var(--amber)">ESSv8 Base</span><span class="ver-old changed">8.6.2</span><span class="ver-arrow">→</span><span class="ver-new" style="color:var(--text);background:rgba(251,191,36,0.13);border:1px solid rgba(251,191,36,0.3)">8.6.3</span></div>
+          <div class="ver-row"><span class="ver-label" style="color:var(--rose)">eClaim</span><span class="ver-old changed">8.6.1</span><span class="ver-arrow">→</span><span class="ver-new" style="color:var(--text);background:rgba(251,113,133,0.13);border:1px solid rgba(251,113,133,0.3)">8.6.2</span></div>
+        </div>
+        <div style="margin:14px 0">
+          <div class="section-label mono">Upgrade Steps (in order)</div>
+          <div class="step">
+            <div class="step-num" style="background:rgba(251,191,36,0.13);border:1px solid rgba(251,191,36,0.3);color:var(--amber)">1</div>
+            <div><div class="step-text">Upgrade HRMSv7 7.3.0.9 → 7.3.1.0</div><div class="step-note">Flexiben requires core HRMS changes (new tables, APIs)</div></div>
+          </div>
+          <div class="step">
+            <div class="step-num" style="background:rgba(251,191,36,0.13);border:1px solid rgba(251,191,36,0.3);color:var(--amber)">2</div>
+            <div><div class="step-text">Upgrade ESSv8 Base 8.6.2 → 8.6.3</div><div class="step-note">Contains base-level flexiben logic</div></div>
+          </div>
+          <div class="step">
+            <div class="step-num" style="background:rgba(251,191,36,0.13);border:1px solid rgba(251,191,36,0.3);color:var(--amber)">3</div>
+            <div><div class="step-text">Upgrade eClaim plugin 8.6.1 → 8.6.2</div><div class="step-note">Contains eClaim-side flexiben UI/processing</div></div>
+          </div>
+        </div>
+        <div class="no-action">
+          <div class="section-label mono">No Action Needed</div>
+          <div class="no-action-item"><span style="color:var(--green);margin-right:6px">—</span>ESSv6 stays at 6.5.1 SP1 — flexiben doesn't touch v6</div>
+          <div class="no-action-item"><span style="color:var(--green);margin-right:6px">—</span>Other plugins — untouched, still compatible (Rule 1)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div style="margin-bottom:28px">
+    <div class="label mono" style="letter-spacing:0.1em;margin-bottom:12px">Common Questions</div>
+    <div id="faqContainer"></div>
+  </div>
+
+  <!-- Reference Table -->
+  <div class="ref-table">
+    <div class="ref-table-title">Quick Reference</div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th class="mono">Product</th><th class="mono">Depends On</th><th class="mono">Children</th><th class="mono">Backward Compat?</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--accent)">HRMSv7</td><td>— (root)</td><td>ESSv6, ESSv8</td><td style="color:var(--green);font-weight:600">Yes</td></tr>
+        <tr><td style="color:var(--green)">ESSv6</td><td>HRMSv7</td><td>ESSv8</td><td style="color:var(--green);font-weight:600">Yes</td></tr>
+        <tr><td style="color:var(--amber)">ESSv8 Base</td><td>HRMSv7, ESSv6</td><td>Plugins, X Base</td><td style="color:var(--green);font-weight:600">Yes</td></tr>
+        <tr><td style="color:var(--rose)">V8 Plugins</td><td>ESSv8 Base only</td><td>—</td><td style="color:var(--textDim)">N/A</td></tr>
+        <tr><td style="color:var(--cyan)">X Base</td><td>ESSv8 Base only</td><td>X Modules</td><td style="color:var(--green);font-weight:600">Yes</td></tr>
+        <tr><td style="color:var(--cyan)">X Modules</td><td>X Base only</td><td>—</td><td style="color:var(--textDim)">N/A</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="footer">FlexHR Product Hierarchy & Compatibility Reference • Internal Use</div>
+</div>
+
+<script>
+// Diagram data
+const W=680,H=290;
+const nodes=[
+  {id:"v7",label:"HRMSv7",sub:"Core Foundation",x:50,y:6,w:110,h:34,color:"var(--accent)",bg:"var(--accentSoft)"},
+  {id:"v6",label:"ESSv6",sub:"Depends on v7",x:20,y:24,w:90,h:32,color:"var(--green)",bg:"var(--greenSoft)"},
+  {id:"v8",label:"ESSv8 Base",sub:"Depends on v6 & v7",x:50,y:24,w:100,h:32,color:"var(--amber)",bg:"var(--amberSoft)"},
+  {id:"hrss",label:"HRSS",sub:"Module",x:80,y:24,w:74,h:32,color:"var(--purple)",bg:"var(--purpleSoft)"},
+  {id:"eclaim",label:"eClaim",x:22,y:46,w:72,h:26,color:"var(--rose)",bg:"var(--roseSoft)",dashed:true},
+  {id:"p2",label:"Plugin B",x:42,y:46,w:72,h:26,color:"var(--rose)",bg:"var(--roseSoft)",dashed:true},
+  {id:"p3",label:"Plugin C",x:62,y:46,w:72,h:26,color:"var(--rose)",bg:"var(--roseSoft)",dashed:true},
+  {id:"xbase",label:"X Base",sub:"Depends on v8",x:84,y:46,w:90,h:32,color:"var(--cyan)",bg:"var(--cyanSoft)"},
+  {id:"xm1",label:"X Module A",x:74,y:68,w:78,h:24,color:"var(--cyan)",bg:"var(--cyanSoft)",dashed:true},
+  {id:"xm2",label:"X Module B",x:94,y:68,w:78,h:24,color:"var(--cyan)",bg:"var(--cyanSoft)",dashed:true},
+];
+const edges=[
+  {from:"v6",to:"v7"},{from:"v8",to:"v7"},{from:"v8",to:"v6"},
+  {from:"eclaim",to:"v8"},{from:"p2",to:"v8"},{from:"p3",to:"v8"},
+  {from:"xbase",to:"v8"},{from:"xm1",to:"xbase"},{from:"xm2",to:"xbase"},
+];
+
+function pos(n){return{x:(n.x/100)*W,y:(n.y/100)*H+20}}
+function findNode(id){return nodes.find(n=>n.id===id)}
+function getRelated(id){const s=new Set([id]);edges.forEach(e=>{if(e.from===id)s.add(e.to);if(e.to===id)s.add(e.from)});return s}
+
+const svg=document.getElementById('diagram');
+const edgesG=document.getElementById('edges');
+const nodesG=document.getElementById('nodes');
+
+// Draw edges
+edges.forEach((e,i)=>{
+  const fn=findNode(e.from),tn=findNode(e.to);
+  if(!fn||!tn)return;
+  const p1=pos(fn),p2=pos(tn);
+  const y1=p1.y-(fn.h||26)/2+2, y2=p2.y+(tn.h||26)/2-2;
+  const dx=p2.x-p1.x,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy),ux=dx/len,uy=dy/len;
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('data-edge',`${e.from}-${e.to}`);
+  g.setAttribute('opacity','0.55');
+  g.innerHTML=`<line x1="${p1.x}" y1="${y1}" x2="${p2.x-ux*6}" y2="${y2-uy*6}" stroke="var(--textMuted)" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <polygon points="${p2.x},${y2} ${p2.x-ux*8-uy*4},${y2-uy*8+ux*4} ${p2.x-ux*8+uy*4},${y2-uy*8-ux*4}" fill="var(--textMuted)"/>`;
+  edgesG.appendChild(g);
+});
+
+// Draw nodes
+nodes.forEach(n=>{
+  const p=pos(n);
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('data-node',n.id);
+  g.style.cursor='pointer';
+  const ry=n.sub?-1:4;
+  g.innerHTML=`<rect x="${p.x-n.w/2}" y="${p.y-n.h/2}" width="${n.w}" height="${n.h}" rx="7" fill="${n.bg}" stroke="${n.color}" stroke-width="1" ${n.dashed?'stroke-dasharray="4 2"':''}/>
+    <text x="${p.x}" y="${p.y+(n.sub?-1:4)}" text-anchor="middle" fill="${n.color}" font-size="11" font-weight="600" font-family="'IBM Plex Sans',sans-serif">${n.label}</text>
+    ${n.sub?`<text x="${p.x}" y="${p.y+12}" text-anchor="middle" fill="var(--textDim)" font-size="8" font-family="'IBM Plex Mono',monospace">${n.sub}</text>`:''}`;
+
+  g.addEventListener('mouseenter',()=>highlightNode(n.id));
+  g.addEventListener('mouseleave',()=>highlightNode(null));
+  nodesG.appendChild(g);
+});
+
+function highlightNode(id){
+  const rel=id?getRelated(id):null;
+  document.querySelectorAll('[data-node]').forEach(g=>{
+    const nid=g.getAttribute('data-node');
+    g.style.opacity=(!rel||rel.has(nid))?'1':'0.18';
+    const rect=g.querySelector('rect');
+    if(rect)rect.setAttribute('stroke-width',nid===id?'2':'1');
+  });
+  document.querySelectorAll('[data-edge]').forEach(g=>{
+    const[f,t]=g.getAttribute('data-edge').split('-');
+    g.setAttribute('opacity',(!rel||(rel.has(f)&&rel.has(t)))?'0.55':'0.12');
+  });
+}
+
+// Accordion toggle
+function toggleAccordion(id){
+  const el=document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// FAQ
+const faqs=[
+  {q:"Can I upgrade V8 Base without upgrading plugins?",a:"YES — always. Rule 1 & 2: base is backward compatible, and base releases never force plugin upgrades. Your plugins will continue working as-is.",icon:"✓",color:"var(--green)"},
+  {q:"Can I upgrade a plugin without upgrading V8 Base?",a:"CHECK RELEASE NOTES. Rule 3: the new plugin version may require a minimum base version. If it does, upgrade the base first.",icon:"⚠",color:"var(--amber)"},
+  {q:"Can I upgrade X Base without upgrading X Modules?",a:"YES — same rules apply. X Base is backward compatible with its modules.",icon:"✓",color:"var(--green)"},
+  {q:"If a feature spans multiple systems, what do I do?",a:"Check release notes for which systems are affected. Upgrade bottom-up: HRMSv7 first (if needed) → V8 Base → plugins. Each customer's scope depends on which parts of the feature they need.",icon:"⚠",color:"var(--amber)"},
+  {q:"Is X Base different from other V8 plugins?",a:"X Base is a plugin of V8 (depends on V8 Base), BUT also acts as a parent for X Modules. Dual role — child of V8, parent of X Modules. Same rules apply at each level.",icon:"ℹ",color:"var(--accent)"},
+];
+
+const faqContainer=document.getElementById('faqContainer');
+faqs.forEach((f,i)=>{
+  const div=document.createElement('div');
+  div.className='accordion';
+  div.id=`faq${i}`;
+  div.innerHTML=`<div class="accordion-header" onclick="toggleAccordion('faq${i}')">
+    <div style="display:flex;gap:10px;align-items:center">
+      <span style="color:${f.color};font-size:15px;font-weight:700">${f.icon}</span>
+      <span style="font-size:13px;font-weight:500;line-height:1.4">${f.q}</span>
+    </div>
+    <span class="accordion-toggle">+</span>
+  </div>
+  <div class="accordion-body" style="padding-top:10px">
+    <div style="font-size:12px;color:var(--textMuted);line-height:1.7;padding-left:25px">${f.a}</div>
+  </div>`;
+  div.style.marginBottom='8px';
+  faqContainer.appendChild(div);
+});
+</script>
+</body>
+</html>
